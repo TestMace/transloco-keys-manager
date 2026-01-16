@@ -6,7 +6,7 @@ import { marker as t } from '@jsverse/transloco-keys-manager/marker';
     <table>
       <tr>
         <th *ngFor="let column of displayedColumns">
-          {{ column | transloco }}
+          {{ column | ep-transloco }}
         </th>
       </tr>
       <tr *ngFor="let row of data">
