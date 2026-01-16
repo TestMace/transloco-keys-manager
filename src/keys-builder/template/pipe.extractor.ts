@@ -26,12 +26,12 @@ import {
 
 export function pipeExtractor(config: TemplateExtractorConfig) {
   const parsedTemplate = parseTemplate(config);
-  const tmplVisitor = new TmplPipeCollector('transloco');
+  const tmplVisitor = new TmplPipeCollector('ep-transloco');
   tmplAstVisitAll(tmplVisitor, parsedTemplate.nodes);
   const astVisitor = new AstPipeCollector();
   astVisitor.visitAll([...tmplVisitor.astTrees], {});
   const keysWithParams = astVisitor.pipes
-    .get('transloco')
+    .get('ep-transloco')
     ?.map((p) => resolveKeyAndParam(p.node))
     .flat()
     .filter(notNil);
@@ -42,7 +42,8 @@ export function pipeExtractor(config: TemplateExtractorConfig) {
 
 interface KeyWithParam {
   keyNode: LiteralPrimitive;
-  paramsNode: AST;
+  defaultValueNode?: AST;
+  paramsNode?: AST;
 }
 
 function resolveKeyNode(ast: OrArray<AST>): LiteralPrimitive[] {
@@ -62,21 +63,25 @@ function resolveKeyNode(ast: OrArray<AST>): LiteralPrimitive[] {
 
 function resolveKeyAndParam(
   pipe: BindingPipe,
+  defaultValueNode?: AST,
   paramsNode?: AST,
 ): KeyWithParam | KeyWithParam[] | null {
-  const resolvedParams: AST = paramsNode ?? pipe.args[0];
+  const resolvedDefaultValue: AST | undefined = defaultValueNode ?? pipe.args[0];
+  const resolvedParams: AST | undefined = paramsNode ?? pipe.args[1];
+  
   if (isBindingPipe(pipe.exp)) {
     let nestedPipe = pipe;
     while (isBindingPipe(nestedPipe.exp)) {
       nestedPipe = nestedPipe.exp;
     }
 
-    return resolveKeyAndParam(nestedPipe, resolvedParams);
+    return resolveKeyAndParam(nestedPipe, resolvedDefaultValue, resolvedParams);
   } else {
     const keyNodes = resolveKeyNode(pipe.exp);
     if (keyNodes.length >= 1) {
       return keyNodes.map((keyNode) => ({
         keyNode,
+        defaultValueNode: resolvedDefaultValue,
         paramsNode: resolvedParams,
       }));
     }
@@ -86,16 +91,22 @@ function resolveKeyAndParam(
 }
 
 function addKeysFromAst(keys: KeyWithParam[], config: ExtractorConfig): void {
-  for (const { keyNode, paramsNode } of keys) {
+  keys.forEach(({ keyNode, defaultValueNode, paramsNode }) => {
     const [key, scopeAlias] = resolveAliasAndKey(keyNode.value, config.scopes);
-    const params = isLiteralMap(paramsNode)
+    const params = paramsNode && isLiteralMap(paramsNode)
       ? resolveKeysFromLiteralMap(paramsNode)
       : [];
+    
+    const defaultValue = defaultValueNode && isLiteralExpression(defaultValueNode)
+      ? String(defaultValueNode.value)
+      : config.defaultValue;
+    
     addKey({
       ...config,
       keyWithoutScope: key,
       scopeAlias,
       params,
+      defaultValue,
     });
-  }
+  });
 }

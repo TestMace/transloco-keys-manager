@@ -1,5 +1,5 @@
 {
-  "name": "@jsverse/transloco-keys-manager",
+  "name": "@testmace/transloco-keys-manager",
   "version": "7.1.0",
   "description": "Extract translatable keys from projects that uses Transloco",
   "engines": {
@@ -38,7 +38,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jsverse/transloco-keys-manager.git"
+    "url": "git+https://github.com/TestMace/transloco-keys-manager.git"
   },
   "keywords": [
     "angular",
@@ -54,7 +54,7 @@
   ],
   "author": "Shahar Kazaz",
   "bugs": {
-    "url": "https://github.com/jsverse/transloco-keys-manager/issues"
+    "url": "https://github.com/TestMace/transloco-keys-manager/issues"
   },
   "homepage": "https://jsverse.gitbook.io/transloco/tools/keys-manager-tkm",
   "config": {
