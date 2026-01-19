@@ -26,12 +26,12 @@ import {
 
 export function pipeExtractor(config: TemplateExtractorConfig) {
   const parsedTemplate = parseTemplate(config);
-  const tmplVisitor = new TmplPipeCollector('ep-transloco');
+  const tmplVisitor = new TmplPipeCollector('epTransloco');
   tmplAstVisitAll(tmplVisitor, parsedTemplate.nodes);
   const astVisitor = new AstPipeCollector();
   astVisitor.visitAll([...tmplVisitor.astTrees], {});
   const keysWithParams = astVisitor.pipes
-    .get('ep-transloco')
+    .get('epTransloco')
     ?.map((p) => resolveKeyAndParam(p.node))
     .flat()
     .filter(notNil);
