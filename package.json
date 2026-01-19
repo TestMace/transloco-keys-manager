@@ -32,7 +32,7 @@
     "clean:dist": "rimraf dist",
     "format:all": "prettier --write src/**/*.ts && prettier --write __tests__/*.ts",
     "prepublish-lib": "npm run test:ep-transloco && npm run build",
-    "test:ep-transloco": "vitest run __tests__/buildTranslationFiles/template-extraction/pipe/",
+    "test:ep-transloco": "vitest run --config vitest.config.ts --testNamePattern 'Pipe'",
     "publish-lib": "cd dist && npm publish"
   },
   "license": "MIT",
