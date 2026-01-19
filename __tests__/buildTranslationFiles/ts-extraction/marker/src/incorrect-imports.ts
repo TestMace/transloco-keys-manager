@@ -6,7 +6,7 @@ import { marker } from 'incorrect-import';
     <table>
       <tr>
         <th *ngFor="let column of displayedColumns">
-          {{ column | ep-transloco }}
+          {{ column | epTransloco }}
         </th>
       </tr>
       <tr *ngFor="let row of data">
