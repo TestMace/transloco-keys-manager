@@ -83,9 +83,12 @@ export class TranslocoExtractKeysWebpackPlugin {
             htmlResult.scopeToKeys,
             tsResult.scopeToKeys,
           ) as ScopeMap;
-          const hasTranslateKeys = Object.keys(scopeToKeys).some(
-            (key) => Object.keys(scopeToKeys[key]).length > 0,
-          );
+          const hasTranslateKeys = Object.keys(scopeToKeys)
+            .filter((key) => key !== '__extractedDefaultKeys')
+            .some((key) => {
+              const value = scopeToKeys[key];
+              return value && !(value instanceof Set) && Object.keys(value).length > 0;
+            });
 
           if (hasTranslateKeys) {
             generateKeys({

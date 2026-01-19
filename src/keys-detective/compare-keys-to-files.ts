@@ -61,7 +61,7 @@ export function compareKeysToFiles({
   const scopePaths = getGlobalConfig().scopePathMap || {};
   for (const [scope, path] of Object.entries(scopePaths)) {
     const keys = scopeToKeys[scope];
-    if (keys) {
+    if (keys && !(keys instanceof Set)) {
       const res: Omit<Result, 'files'> = {
         keys,
         scope,
@@ -87,7 +87,7 @@ export function compareKeysToFiles({
 
     cache[scope] = true;
     const keys = scope ? scopeToKeys[scope] : scopeToKeys.__global;
-    if (keys) {
+    if (keys && !(keys instanceof Set)) {
       const isGlobal = scope === '__global';
       const res: Omit<Result, 'files'> = {
         keys,
