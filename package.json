@@ -1,6 +1,6 @@
 {
   "name": "@testmace/transloco-keys-manager",
-  "version": "7.1.4",
+  "version": "7.1.5",
   "description": "Extract translatable keys from projects that uses Transloco",
   "engines": {
     "node": ">=20.19.0"
@@ -32,7 +32,7 @@
     "clean:dist": "rimraf dist",
     "format:all": "prettier --write src/**/*.ts && prettier --write __tests__/*.ts",
     "prepublish-lib": "npm run test:ep-transloco && npm run build",
-    "test:ep-transloco": "vitest run --config vitest.config.ts --testNamePattern 'Pipe'",
+    "test:ep-transloco": "vitest run __tests__/buildTranslationFiles/template-extraction/pipe/ep-transloco.spec.ts",
     "publish-lib": "cd dist && npm publish"
   },
   "license": "MIT",

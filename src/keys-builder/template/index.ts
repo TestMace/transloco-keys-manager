@@ -15,7 +15,7 @@ export function extractTemplateKeys(config: Config): ExtractionResult {
 export function templateExtractor(config: TemplateExtractorConfig) {
   const { file, scopeToKeys } = config;
   let content = config.content || readFile(file);
-  if (!content.includes('transloco')) return scopeToKeys;
+  if (!content.includes('transloco') && !content.includes('epTransloco')) return scopeToKeys;
 
   const resolvedConfig = { ...config, content };
   pipeExtractor(resolvedConfig);
