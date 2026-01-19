@@ -24,6 +24,8 @@ describe('epTransloco pipe extraction', () => {
   {{ 'key1' | epTransloco: 'Default Value 1' }}
   <p [title]="'key2' | epTransloco: 'Default Value sosal?'"></p>
   {{ 'key3' | epTransloco: 'Hello World': {name: 'test'} }}
+  {{ 'hello.govno2' | epTransloco: 'Hello user govno': {} }}
+  {{ 'hello.govno3' | epTransloco: 'Hello user govno' }}
 </div>`
     );
   });
@@ -41,9 +43,11 @@ describe('epTransloco pipe extraction', () => {
     const translation = fs.readJsonSync(path.join(outputDir, 'en.json'));
     
     expect(translation).toEqual({
-      'key1': 'Default Value 1',
-      'key2': 'Default Value 2',
-      'key3': 'Hello World',
+      key1: 'Default Value 1',
+      key2: 'Default Value sosal?',
+      key3: 'Hello World',
+      'hello.govno2': 'Hello user govno',
+      'hello.govno3': 'Hello user govno',
     });
   });
 });
