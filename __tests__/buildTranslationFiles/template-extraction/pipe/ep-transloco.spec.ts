@@ -22,7 +22,7 @@ describe('epTransloco pipe extraction', () => {
       path.join(testDir, 'src/test.html'),
       `<div>
   {{ 'key1' | epTransloco: 'Default Value 1' }}
-  <p [title]="'key2' | epTransloco: 'Default Value 2'"></p>
+  <p [title]="'key2' | epTransloco: 'Default Value sosal?'"></p>
   {{ 'key3' | epTransloco: 'Hello World': {name: 'test'} }}
 </div>`
     );
