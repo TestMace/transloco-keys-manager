@@ -50,4 +50,40 @@ describe('epTransloco pipe extraction', () => {
       'hello.govno3': 'Hello user govno',
     });
   });
+
+  it('should add missing keys to existing translation file', () => {
+    fs.ensureDirSync(outputDir);
+    fs.writeJsonSync(path.join(outputDir, 'en.json'), {
+      key1: 'Existing translation 1',
+      key2: 'Existing translation 2',
+    });
+
+    fs.writeFileSync(
+      path.join(testDir, 'src/test.html'),
+      `<div>
+  {{ 'key1' | epTransloco: 'Default Value 1' }}
+  {{ 'key2' | epTransloco: 'Default Value 2' }}
+  {{ 'newKey' | epTransloco: 'New key default' }}
+  {{ 'another.new.key' | epTransloco: 'Another new key' }}
+</div>`
+    );
+
+    buildTranslationFiles({
+      input: [path.resolve(testDir, 'src')],
+      output: path.resolve(outputDir),
+      translationsPath: path.resolve(outputDir),
+      langs: ['en'],
+      fileFormat: 'json',
+      scopes: { scopeToAlias: {}, aliasToScope: {} },
+    } as any);
+
+    const translation = fs.readJsonSync(path.join(outputDir, 'en.json'));
+    
+    expect(translation).toEqual({
+      key1: 'Existing translation 1',
+      key2: 'Existing translation 2',
+      newKey: 'New key default',
+      'another.new.key': 'Another new key',
+    });
+  });
 });
