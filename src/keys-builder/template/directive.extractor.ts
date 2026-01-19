@@ -1,6 +1,7 @@
 import {
   AST,
   ASTWithSource,
+  LiteralPrimitive,
   ParenthesizedExpression,
   TmplAstBoundAttribute,
   TmplAstNode,
@@ -43,31 +44,56 @@ function traverse(nodes: TmplAstNode[], config: ExtractorConfig) {
       continue;
     }
 
-    const params = node.inputs
+    const translocoParams = node.inputs
       .filter(isTranslocoParams)
       .map((ast) => {
         const value = ast.value;
         if (value instanceof ASTWithSource && isLiteralMap(value.ast)) {
           return resolveKeysFromLiteralMap(value.ast);
         }
-
         return [];
       })
       .flat();
-    const keys = [...node.inputs, ...node.attributes]
+    const translocoKeys = [...node.inputs, ...node.attributes]
       .filter(isTranslocoDirective)
       .map((ast) => {
         let value = ast.value;
         if (value instanceof ASTWithSource) {
           value = value.ast;
         }
-
         return isInterpolation(value) ? (value.expressions as AST[]) : value;
       })
       .flat()
       .map(resolveKey)
       .flat();
-    addKeys(keys, params, config);
+    addTranslocoKeys(translocoKeys, translocoParams, config);
+
+    const epTranslocoParams = node.inputs
+      .filter(isEpTranslocoParams)
+      .map((ast) => {
+        const value = ast.value;
+        if (value instanceof ASTWithSource && isLiteralMap(value.ast)) {
+          return resolveKeysFromLiteralMap(value.ast);
+        }
+        return [];
+      })
+      .flat();
+    const defaultValueAttr = [...node.inputs, ...node.attributes].find(isEpTranslocoDefault);
+    const extractedDefault = resolveDefaultValue(defaultValueAttr);
+    const epTranslocoKeys = [...node.inputs, ...node.attributes]
+      .filter(isEpTranslocoDirective)
+      .map((ast) => {
+        let value = ast.value;
+        if (value instanceof ASTWithSource) {
+          value = value.ast;
+        }
+        return isInterpolation(value) ? (value.expressions as AST[]) : value;
+      })
+      .flat()
+      .map(resolveKey)
+      .flat();
+    addEpTranslocoKeys(epTranslocoKeys, epTranslocoParams, extractedDefault, config);
+
     traverse(node.children, config);
   }
 }
@@ -82,6 +108,47 @@ function isTranslocoDirective(
 
 function isTranslocoParams(ast: unknown): ast is TmplAstBoundAttribute {
   return isBoundAttribute(ast) && ast.name === 'translocoParams';
+}
+
+function isEpTranslocoDirective(
+  ast: unknown,
+): ast is TmplAstBoundAttribute | TmplAstTextAttribute {
+  return (
+    (isBoundAttribute(ast) || isTextAttribute(ast)) && ast.name === 'epTransloco'
+  );
+}
+
+function isEpTranslocoDefault(
+  ast: unknown,
+): ast is TmplAstBoundAttribute | TmplAstTextAttribute {
+  return (
+    (isBoundAttribute(ast) || isTextAttribute(ast)) && ast.name === 'epTranslocoDefault'
+  );
+}
+
+function isEpTranslocoParams(ast: unknown): ast is TmplAstBoundAttribute {
+  return isBoundAttribute(ast) && ast.name === 'epTranslocoParams';
+}
+
+function resolveDefaultValue(
+  attr: TmplAstBoundAttribute | TmplAstTextAttribute | undefined,
+): string | undefined {
+  if (!attr) {
+    return undefined;
+  }
+
+  if (isTextAttribute(attr)) {
+    return attr.value;
+  }
+
+  if (isBoundAttribute(attr)) {
+    const value = attr.value;
+    if (value instanceof ASTWithSource && isLiteralExpression(value.ast)) {
+      return String((value.ast as LiteralPrimitive).value);
+    }
+  }
+
+  return undefined;
 }
 
 function resolveKey(ast: OrArray<AST | string>): string[] {
@@ -101,12 +168,12 @@ function resolveKey(ast: OrArray<AST | string>): string[] {
     .flat();
 }
 
-function addKeys(
+function addTranslocoKeys(
   keys: string[],
   params: string[],
   config: ExtractorConfig,
 ): void {
-  for (const rawKey of keys) {
+  keys.forEach((rawKey) => {
     const [key, scopeAlias] = resolveAliasAndKey(rawKey, config.scopes);
     addKey({
       ...config,
@@ -114,5 +181,27 @@ function addKeys(
       scopeAlias,
       params,
     });
-  }
+  });
+}
+
+function addEpTranslocoKeys(
+  keys: string[],
+  params: string[],
+  extractedDefault: string | undefined,
+  config: ExtractorConfig,
+): void {
+  keys.forEach((rawKey) => {
+    const [key, scopeAlias] = resolveAliasAndKey(rawKey, config.scopes);
+    const hasExtractedDefault = extractedDefault !== undefined;
+    const defaultValue = hasExtractedDefault ? extractedDefault : config.defaultValue;
+
+    addKey({
+      ...config,
+      keyWithoutScope: key,
+      scopeAlias,
+      params,
+      defaultValue,
+      isExtractedDefault: hasExtractedDefault,
+    });
+  });
 }
