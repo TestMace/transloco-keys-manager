@@ -9,11 +9,11 @@
       <div *ngFor="let group of data.insights; trackBy: groupTrack; let i = index">
         <da-insights-list-item
                 class="mb-20" [insights]="group.insights" [listIndex]="i"
-                [listLength]="'24' | epTransloco" [insightContext]="insightContext"
-                [insightListData]="listData" [botKpiMetric]="data.botKpiMetric | epTransloco"
+                [listLength]="'24' | transloco" [insightContext]="insightContext"
+                [insightListData]="listData" [botKpiMetric]="data.botKpiMetric | transloco"
                 [botMagnitudeMetric]="data.botMagnitudeMetric"
                 (insightDismiss)="dismissInsight($event)"
-                [attr.data-auto-id]='"25" | epTransloco'>
+                [attr.data-auto-id]='"25" | transloco'>
         </da-insights-list-item>
       </div>
 
@@ -23,6 +23,6 @@
   <da-facebook-loader-insight-bot *ngIf="loadingInsights$ | async"
                                   class="mx-30 mb-30">
     {{ '26' |   transloco}}
-    <div [class.name]="'27' | epTransloco"></div>
+    <div [class.name]="'27' | transloco"></div>
   </da-facebook-loader-insight-bot>
 </div>

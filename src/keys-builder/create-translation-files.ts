@@ -1,10 +1,23 @@
 import { messages } from '../messages';
-import { Config, ScopeMap } from '../types';
+import { Config, ScopeMap, Translation } from '../types';
 import { getLogger } from '../utils/logger';
 import { buildScopeFilePaths } from '../utils/path.utils';
 
 import { buildTranslationFile, FileAction } from './build-translation-file';
 import { runPrettier } from './utils/run-prettier';
+
+function createNonDefaultLangTranslation(
+  translation: Translation,
+  extractedDefaultKeys: Set<string>,
+  scopePath?: string,
+): Translation {
+  const result: Translation = {};
+  Object.keys(translation).forEach((key) => {
+    const fullKey = scopePath ? `${scopePath}:${key}` : key;
+    result[key] = extractedDefaultKeys.has(fullKey) ? '' : translation[key];
+  });
+  return result;
+}
 
 export async function createTranslationFiles({
   scopeToKeys,
@@ -16,6 +29,8 @@ export async function createTranslationFiles({
   fileFormat,
 }: Config & { scopeToKeys: ScopeMap }) {
   const logger = getLogger();
+  const defaultLang = langs[0];
+  const extractedDefaultKeys = scopeToKeys.__extractedDefaultKeys || new Set<string>();
 
   const scopeFiles = buildScopeFilePaths({
     aliasToScope: scopes.aliasToScope,
@@ -25,32 +40,42 @@ export async function createTranslationFiles({
   });
   const globalFiles = langs.map((lang) => ({
     path: `${output}/${lang}.${fileFormat}`,
+    lang,
   }));
   const actions: FileAction[] = [];
 
-  for (const { path } of globalFiles) {
+  globalFiles.forEach(({ path, lang }) => {
+    const isDefaultLang = lang === defaultLang;
+    const translation = isDefaultLang
+      ? scopeToKeys.__global
+      : createNonDefaultLangTranslation(scopeToKeys.__global, extractedDefaultKeys);
     actions.push(
       buildTranslationFile({
         path,
-        translation: scopeToKeys.__global,
+        translation,
         replace,
         removeExtraKeys,
         fileFormat,
       }),
     );
-  }
+  });
 
-  for (const { path, scope } of scopeFiles) {
+  scopeFiles.forEach(({ path, scope, lang }) => {
+    const isDefaultLang = lang === defaultLang;
+    const scopeTranslation = (scopeToKeys[scope] || {}) as Record<string, string>;
+    const translation = isDefaultLang
+      ? scopeTranslation
+      : createNonDefaultLangTranslation(scopeTranslation, extractedDefaultKeys, scope);
     actions.push(
       buildTranslationFile({
         path,
-        translation: scopeToKeys[scope],
+        translation,
         replace,
         removeExtraKeys,
         fileFormat,
       }),
     );
-  }
+  });
 
   if (fileFormat === 'json') {
     await runPrettier(actions.map(({ path }) => path));

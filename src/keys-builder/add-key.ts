@@ -1,11 +1,12 @@
 import { messages } from '../messages';
 import { BaseParams } from '../types';
-import { isFunction, isNil, isString } from '../utils/validators.utils';
+import { isNil } from '../utils/validators.utils';
 
 interface AddKeysParams extends BaseParams {
   scopeAlias: string | null;
   keyWithoutScope: string;
   params?: string[];
+  isExtractedDefault?: boolean;
 }
 
 export function addKey({
@@ -15,6 +16,7 @@ export function addKey({
   keyWithoutScope,
   scopes,
   params = [],
+  isExtractedDefault = false,
 }: AddKeysParams) {
   if (!keyWithoutScope) {
     return;
@@ -34,11 +36,19 @@ export function addKey({
         .replace('{{params}}', paramsWithInterpolation)
         .replace('{{scope}}', scopeAlias || '');
 
+  if (isExtractedDefault) {
+    if (!scopeToKeys.__extractedDefaultKeys) {
+      scopeToKeys.__extractedDefaultKeys = new Set();
+    }
+    const fullKey = scopePath ? `${scopePath}:${keyWithoutScope}` : keyWithoutScope;
+    scopeToKeys.__extractedDefaultKeys.add(fullKey);
+  }
+
   if (scopePath) {
     if (!scopeToKeys[scopePath]) {
       scopeToKeys[scopePath] = {};
     }
-    scopeToKeys[scopePath][keyWithoutScope] = keyValue;
+    (scopeToKeys[scopePath] as Record<string, string>)[keyWithoutScope] = keyValue;
   } else {
     scopeToKeys.__global[keyWithoutScope] = keyValue;
   }

@@ -1,9 +1,9 @@
 <div>
-    {{ '1' | epTransloco:{'1': ''} }}
-    <p [title]="'2' | epTransloco:{'2': 123}"></p>
+    {{ '1' | transloco:{'1': ''} }}
+    <p [title]="'2' | transloco:{'2': 123}"></p>
 </div>
 
 <a [title]="'admin.1' | lowercase
-    | epTransloco:{a: 'asd', b: {c: 123}}"
+    | transloco:{a: 'asd', b: {c: 123}}"
    [routerLink]="'admin' | lowercase">
 </a>

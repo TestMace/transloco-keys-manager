@@ -50,7 +50,8 @@ export type Scopes = {
 
 export type ScopeMap = {
   __global: Record<string, string>;
-  [scopePath: string]: Record<string, string>;
+  __extractedDefaultKeys?: Set<string>;
+  [scopePath: string]: Record<string, string> | Set<string> | undefined;
 };
 
 export enum TEMPLATE_TYPE {

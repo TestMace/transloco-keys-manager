@@ -86,4 +86,36 @@ describe('epTransloco pipe extraction', () => {
       'another.new.key': 'Another new key',
     });
   });
+
+  it('should add default values only to default language, not to other languages', () => {
+    fs.writeFileSync(
+      path.join(testDir, 'src/test.html'),
+      `<div>
+  {{ 'greeting' | epTransloco: 'Hello World' }}
+  {{ 'farewell' | epTransloco: 'Goodbye' }}
+</div>`
+    );
+
+    buildTranslationFiles({
+      input: [path.resolve(testDir, 'src')],
+      output: path.resolve(outputDir),
+      translationsPath: path.resolve(outputDir),
+      langs: ['en', 'fr'],
+      fileFormat: 'json',
+      scopes: { scopeToAlias: {}, aliasToScope: {} },
+    } as any);
+
+    const enTranslation = fs.readJsonSync(path.join(outputDir, 'en.json'));
+    const frTranslation = fs.readJsonSync(path.join(outputDir, 'fr.json'));
+    
+    expect(enTranslation).toEqual({
+      greeting: 'Hello World',
+      farewell: 'Goodbye',
+    });
+
+    expect(frTranslation).toEqual({
+      greeting: '',
+      farewell: '',
+    });
+  });
 });

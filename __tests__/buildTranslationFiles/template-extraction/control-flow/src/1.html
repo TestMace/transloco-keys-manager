@@ -1,5 +1,5 @@
-@let myVar = '27' | epTransloco;
-<span>{{ '1' | epTransloco }}</span>
+@let myVar = '27' | transloco;
+<span>{{ '1' | transloco }}</span>
 <span transloco="2"></span>
 <ng-container *transloco="let t">
   <span>{{ t('3') }}</span>
@@ -10,7 +10,7 @@
 
 
 @if (a > b) {
-  <span>{{ '5' | epTransloco }}</span>
+  <span>{{ '5' | transloco }}</span>
   <span transloco="6">
   </span>
   <ng-container *transloco="let t">
@@ -20,34 +20,34 @@
     <span>{{ t('8') }}</span>
   </ng-template>
 } @else if (b > a) {
-  <span>{{ '9' | epTransloco }}</span>
+  <span>{{ '9' | transloco }}</span>
 } @else {
-  <span [innerHtml]="'10' | epTransloco"></span>
+  <span [innerHtml]="'10' | transloco"></span>
 }
 
 @for (item of items; track item.id) {
-  {{ '11' | epTransloco }}
+  {{ '11' | transloco }}
 } @empty {
-  <span>{{ '12' | epTransloco }}</span>
+  <span>{{ '12' | transloco }}</span>
 }
 
 @switch (condition) {
   @case (caseA) {
-    <span>{{ '13' | epTransloco }}</span>
+    <span>{{ '13' | transloco }}</span>
   }
   @default {
-    <span>{{ '14' | epTransloco }}</span>
+    <span>{{ '14' | transloco }}</span>
   }
 }
 
 @defer {
-  <span>{{ '15' | epTransloco }}</span>
+  <span>{{ '15' | transloco }}</span>
 } @error {
-  <span>{{ '16' | epTransloco }}</span>
+  <span>{{ '16' | transloco }}</span>
 } @placeholder {
-  <span>{{ '17' | epTransloco }}</span>
+  <span>{{ '17' | transloco }}</span>
 } @loading {
-  <span>{{ '18' | epTransloco }}</span>
+  <span>{{ '18' | transloco }}</span>
 }
 
 <ng-container *transloco="let t">
@@ -65,7 +65,7 @@
       }
       @default {
         @defer {
-          <span>{{ '23' | epTransloco }}</span>
+          <span>{{ '23' | transloco }}</span>
         } @error {
           <span transloco="24"></span>
         } @placeholder {
