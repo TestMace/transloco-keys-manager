@@ -31,8 +31,8 @@
     "postbuild": "node ./scripts/post-build.js",
     "clean:dist": "rimraf dist",
     "format:all": "prettier --write src/**/*.ts && prettier --write __tests__/*.ts",
-    "prepublish-lib": "npm run test:skip-pipe && npm run build",
-    "test:skip-pipe": "vitest run --exclude='**/pipe/**' --exclude='**/findMissingKeys/**'",
+    "prepublish-lib": "npm run test:ep-transloco && npm run build",
+    "test:ep-transloco": "vitest run __tests__/buildTranslationFiles/template-extraction/pipe/",
     "publish-lib": "cd dist && npm publish"
   },
   "license": "MIT",
