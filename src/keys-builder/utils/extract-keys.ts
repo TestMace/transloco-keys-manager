@@ -10,7 +10,7 @@ import { devlog } from '../../utils/logger';
 import { normalizedGlob } from '../../utils/normalize-glob-path';
 
 export function extractKeys(
-  { input, scopes, defaultValue, files }: Config,
+  { input, scopes, defaultValue, files, exclude = [] }: Config,
   fileType: FileType,
   extractor: (config: ExtractorConfig) => ScopeMap,
 ): ExtractionResult {
@@ -18,12 +18,12 @@ export function extractKeys(
 
   const fileList =
     files ||
-    input.map((path) => normalizedGlob(`${path}/**/*.${fileType}`)).flat();
+    input.map((path) => normalizedGlob(`${path}/**/*.${fileType}`, { ignore: exclude })).flat();
 
-  for (const file of fileList) {
+  fileList.forEach((file) => {
     devlog('extraction', 'Extracting keys', { file, fileType });
     scopeToKeys = extractor({ file, defaultValue, scopes, scopeToKeys });
-  }
+  });
 
   return { scopeToKeys, fileCount: fileList.length };
 }

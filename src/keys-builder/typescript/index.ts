@@ -12,7 +12,7 @@ import { regexFactoryMap } from '../../utils/regexs.utils';
 import { addCommentSectionKeys } from '../add-comment-section-keys';
 import { addKey } from '../add-key';
 import { extractKeys } from '../utils/extract-keys';
-import { resolveScopeAlias } from '../utils/resolvers.utils';
+import { resolveAliasAndKey, resolveScopeAlias } from '../utils/resolvers.utils';
 
 import { epSignalExtractor } from './ep-signal.extractor';
 import { inlineTemplateExtractor } from './inline-template';
@@ -90,26 +90,15 @@ function TSExtractor(config: ExtractorConfig): ScopeMap {
   return scopeToKeys;
 }
 
-/**
- *
- * It can be one of the following:
- *
- * translate('2', {}, 'some/nested');
- * translate('3', {}, 'some/nested/en');
- * translate('globalKey');
- *
- */
 function resolveAliasAndKeyFromService(
   key: string,
   scopePath: string,
   scopes: Scopes,
 ): [string, string | null] {
-  // It means that it's the global
-  if (!scopePath) {
-    return [key, null];
+  if (scopePath) {
+    const scopeAlias = resolveScopeAlias({ scopePath, scopes });
+    return [key, scopeAlias];
   }
 
-  const scopeAlias = resolveScopeAlias({ scopePath, scopes });
-
-  return [key, scopeAlias];
+  return resolveAliasAndKey(key, scopes);
 }

@@ -18,6 +18,13 @@ export const optionDefinitions = [
       'The source directory for all files using the translation keys',
   },
   {
+    name: 'exclude',
+    alias: 'x',
+    type: String,
+    description:
+      'Glob patterns to exclude files from extraction (comma-separated)',
+  },
+  {
     name: 'output',
     alias: 'o',
     type: String,

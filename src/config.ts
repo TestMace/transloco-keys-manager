@@ -28,6 +28,7 @@ export function defaultConfig({
   | 'unflat'
   | 'command'
   | 'files'
+  | 'exclude'
 > {
   const isApp = projectType === 'application';
   const input = `${sourceRoot}/${isApp ? 'app' : 'lib'}`;

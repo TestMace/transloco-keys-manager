@@ -1,6 +1,6 @@
 {
   "name": "@testmace/transloco-keys-manager",
-  "version": "7.1.8",
+  "version": "7.1.10",
   "description": "Extract translatable keys from projects that uses Transloco",
   "engines": {
     "node": ">=20.19.0"

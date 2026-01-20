@@ -31,6 +31,7 @@ const resolvedConfig = {
   ...config,
   command: mainOptions.command,
   ...(config.input ? { input: config.input.split(',') } : {}),
+  ...(config.exclude ? { exclude: config.exclude.split(',') } : {}),
 } as Config;
 
 if (resolvedConfig.command === 'extract') {

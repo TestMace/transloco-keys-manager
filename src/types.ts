@@ -1,5 +1,6 @@
 export type Config = {
   input: string[];
+  exclude: string[];
   config: string;
   project: string;
   translationsPath: string;
