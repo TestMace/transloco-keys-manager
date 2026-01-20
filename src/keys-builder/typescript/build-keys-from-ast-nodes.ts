@@ -10,8 +10,8 @@ export function buildKeysFromASTNodes(
 ): TSExtractorResult {
   const result: TSExtractorResult = [];
 
-  for (let node of nodes) {
-    if (!ts.isCallExpression(node.parent)) continue;
+  nodes.forEach((node) => {
+    if (!ts.isCallExpression(node.parent)) return;
 
     const method = node.parent.expression;
     let methodName = '';
@@ -21,7 +21,7 @@ export function buildKeysFromASTNodes(
       methodName = method.name.text;
     }
     if (!allowedMethods.includes(methodName)) {
-      continue;
+      return;
     }
 
     const [keyNode, paramsNode, langNode] = node.parent.arguments;
@@ -38,10 +38,99 @@ export function buildKeysFromASTNodes(
       keys = keyNode.elements.filter(isStringNode).map((node) => node.text);
     }
 
-    for (const key of keys) {
+    keys.forEach((key) => {
       result.push({ key, lang, params });
+    });
+  });
+
+  return result;
+}
+
+const EP_METHODS = [
+  'epTranslate',
+  'epSelectTranslate',
+  'epTranslateObject',
+  'epSelectTranslateObject',
+  'epTranslateSignal',
+  'epTranslateObjectSignal',
+];
+
+const EP_ARRAY_METHODS = ['epTranslateArray', 'epTranslateArraySignal'];
+
+export function buildKeysFromEpASTNodes(nodes: Node[], signalNameOverride?: string): TSExtractorResult {
+  const result: TSExtractorResult = [];
+
+  nodes.forEach((node) => {
+    if (!ts.isCallExpression(node.parent)) return;
+
+    const method = node.parent.expression;
+    let methodName = '';
+    if (ts.isIdentifier(method)) {
+      methodName = method.text;
+    } else if (ts.isPropertyAccessExpression(method)) {
+      methodName = method.name.text;
     }
-  }
+
+    const effectiveMethodName = signalNameOverride || methodName;
+
+    if (EP_METHODS.includes(effectiveMethodName)) {
+      const [keyNode, defaultValueNode, paramsNode, langNode] = node.parent.arguments;
+      let lang = isStringNode(langNode) ? langNode.text : '';
+      let keys: string[] = [];
+      const params: string[] =
+        paramsNode && ts.isObjectLiteralExpression(paramsNode)
+          ? resolveParams(paramsNode)
+          : [];
+      const defaultValue = isStringNode(defaultValueNode) ? defaultValueNode.text : undefined;
+
+      if (isStringNode(keyNode)) {
+        keys = [keyNode.text];
+      } else if (ts.isArrayLiteralExpression(keyNode)) {
+        keys = keyNode.elements.filter(isStringNode).map((n) => n.text);
+      }
+
+      keys.forEach((key) => {
+        result.push({
+          key,
+          lang,
+          params,
+          defaultValue,
+          isExtractedDefault: defaultValue !== undefined,
+        });
+      });
+    } else if (EP_ARRAY_METHODS.includes(effectiveMethodName)) {
+      const [keysNode, defaultValuesNode, paramsNode, langNode] = node.parent.arguments;
+      let lang = isStringNode(langNode) ? langNode.text : '';
+      const params: string[] =
+        paramsNode && ts.isObjectLiteralExpression(paramsNode)
+          ? resolveParams(paramsNode)
+          : [];
+
+      let keys: string[] = [];
+      let defaultValues: (string | undefined)[] = [];
+
+      if (ts.isArrayLiteralExpression(keysNode)) {
+        keys = keysNode.elements.filter(isStringNode).map((n) => n.text);
+      }
+
+      if (defaultValuesNode && ts.isArrayLiteralExpression(defaultValuesNode)) {
+        defaultValues = defaultValuesNode.elements.map((el) =>
+          isStringNode(el) ? el.text : undefined,
+        );
+      }
+
+      keys.forEach((key, index) => {
+        const defaultValue = defaultValues[index];
+        result.push({
+          key,
+          lang,
+          params,
+          defaultValue,
+          isExtractedDefault: defaultValue !== undefined,
+        });
+      });
+    }
+  });
 
   return result;
 }

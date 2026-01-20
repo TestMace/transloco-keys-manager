@@ -14,6 +14,7 @@ import { addKey } from '../add-key';
 import { extractKeys } from '../utils/extract-keys';
 import { resolveScopeAlias } from '../utils/resolvers.utils';
 
+import { epSignalExtractor } from './ep-signal.extractor';
 import { inlineTemplateExtractor } from './inline-template';
 import { markerExtractor } from './marker.extractor';
 import { pureFunctionExtractor } from './pure-function.extractor';
@@ -24,8 +25,11 @@ export function extractTSKeys(config: Config): ExtractionResult {
   return extractKeys(config, 'ts', TSExtractor);
 }
 
-const translocoImport = /@(jsverse|ngneat)\/transloco/;
-const translocoKeysManagerImport = /@(jsverse|ngneat)\/transloco-keys-manager/;
+const translocoImport = /@(jsverse|ngneat|testmace)\/transloco/;
+const translocoKeysManagerImport = /@(jsverse|ngneat|testmace)\/transloco-keys-manager/;
+const epTranslocoServiceImport = /EpTranslocoService/;
+const epTranslocoSignalImport = /epTranslate(Signal|ArraySignal|ObjectSignal)/;
+
 function TSExtractor(config: ExtractorConfig): ScopeMap {
   const { file, scopes, defaultValue, scopeToKeys } = config;
   const content = readFile(file);
@@ -33,6 +37,14 @@ function TSExtractor(config: ExtractorConfig): ScopeMap {
 
   if (translocoImport.test(content)) {
     extractors.push(serviceExtractor, pureFunctionExtractor, signalExtractor);
+  }
+
+  if (epTranslocoServiceImport.test(content)) {
+    extractors.push(serviceExtractor);
+  }
+
+  if (epTranslocoSignalImport.test(content)) {
+    extractors.push(epSignalExtractor);
   }
 
   if (translocoKeysManagerImport.test(content)) {
@@ -49,17 +61,20 @@ function TSExtractor(config: ExtractorConfig): ScopeMap {
   extractors
     .map((ex) => ex(ast))
     .flat()
-    .forEach(({ key, lang, params }) => {
+    .forEach(({ key, lang, params, defaultValue: extractedDefault, isExtractedDefault }) => {
       const [keyWithoutScope, scopeAlias] = resolveAliasAndKeyFromService(
         key,
         lang,
         scopes,
       );
+      const hasExtractedDefault = isExtractedDefault && extractedDefault !== undefined;
       addKey({
         scopeAlias,
         keyWithoutScope,
         params,
         ...baseParams,
+        defaultValue: hasExtractedDefault ? extractedDefault : defaultValue,
+        isExtractedDefault: hasExtractedDefault,
       });
     });
 
